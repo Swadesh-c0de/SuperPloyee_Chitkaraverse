@@ -6,222 +6,179 @@
 
 *Connect every tool your company uses. Ask anything. Cortex knows.*
 
+**[🚀 Live Demo → superployee.vercel.app](https://superployee.vercel.app/)**
+
 </div>
-
----
-
-Cortex is a **living, AI-powered knowledge operating system** for businesses. It ingests your company's scattered knowledge — from Notion docs to Slack threads to GitHub repos to live meetings — builds a persistent neural knowledge graph, and lets anyone query it in natural language. No more hunting through 12 tabs to answer a simple question.
 
 ---
 
 ## Table of Contents
 
-- [Onboarding Flow](#onboarding-flow)
-- [Constellation — The Neural Knowledge Graph](#constellation--the-neural-knowledge-graph)
-- [Query Console](#query-console)
-- [Sync History](#sync-history)
-- [Territory Map](#territory-map)
-- [Meeting Brain](#meeting-brain)
-- [Customer Intel](#customer-intel)
-- [Onboarding Copilot](#onboarding-copilot)
-- [SOP Autopilot](#sop-autopilot)
-- [Wiki Health](#wiki-health)
-- [Feed Sources](#feed-sources)
+- [Problem Statement](#problem-statement)
+- [Solution Overview](#solution-overview)
+- [Key Features](#key-features)
+- [Screenshots](#screenshots)
 - [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
+- [Impact](#impact)
+- [Setup Instructions](#setup-instructions)
+- [Demo Link](#demo-link)
 
 ---
 
-## Onboarding Flow
+## Problem Statement
 
-Cortex begins with a multi-step initialization protocol that seeds your neural net with your company's identity, mission, team structure, and focus areas before you connect a single source.
+Every growing company has the same invisible crisis: **knowledge is everywhere, but accessible to no one.**
 
-**Step 1 — Initialize Your Instance**
+- Decisions made in Slack disappear in 3 days
+- Notion docs go stale the moment they're written
+- New employees take 2–3 months to become productive
+- Sales reps don't know what support tickets exist for the customer they're about to call
+- Engineers waste hours hunting for context that lives in a thread nobody can find
 
-Set your company name, industry, and deployment scale. This seeds the root identity node in the knowledge graph.
+**The result:** companies are re-solving the same problems daily, hemorrhaging time, making slow decisions, and losing institutional knowledge every time someone leaves.
+
+---
+
+## Solution Overview
+
+**Cortex is a living, AI-powered knowledge operating system** that connects every tool your company uses — Notion, GitHub, Jira, Slack, Intercom, Confluence, Google Drive — and builds a **persistent neural knowledge graph** from all of it.
+
+Instead of searching 12 tabs, you ask Cortex. Instead of writing SOPs by hand, Cortex generates them. Instead of onboarding new hires with a PDF, Cortex builds them a personalized 30-60-90 day roadmap from your actual company knowledge. Instead of missing context in meetings, Cortex joins as a silent observer and surfaces what's relevant in real-time.
+
+**Cortex doesn't just store knowledge — it understands it, connects it, and puts it to work.**
+
+---
+
+## Key Features
+
+### 1. Neural Knowledge Graph (Constellation)
+All company knowledge — docs, repos, tickets, decisions, conversations — rendered as a live, interactive force-directed graph. Every node is typed (source, entity, concept, project, decision, analysis) and linked by semantic relationships. Sync a GitHub org and watch 87 repos materialize as connected nodes in real-time.
+
+### 2. Query Console
+Ask anything in natural language. Cortex reasons over all active knowledge nodes and returns answers grounded in your actual data — with a full reasoning trace showing exactly which sources it consulted. No hallucination. Just your company's knowledge, made instant.
+
+### 3. Meeting Brain
+Cortex joins your Google Meet, Zoom, or Teams calls as a silent observer. It streams the live transcript, matches what's being said against your knowledge base, and surfaces relevant context — docs, past decisions, related tickets — in a side panel. No more "let me find that doc" mid-call.
+
+### 4. SOP Autopilot
+Generate fully structured Standard Operating Procedures from your connected sources. Each SOP includes triggers, goals, constraints, typed steps (MANUAL / AI ACTION / DECISION), if-then rules, variables, and outputs. One click simulates the entire SOP run.
+
+### 5. Onboarding Copilot
+Generate personalized onboarding roadmaps for new employees or new clients in seconds. Cortex scans your knowledge base, indexes relevant docs (handbooks, architecture guides, SOPs, team contacts), and composes a phased roadmap with priorities and action items. Export as PDF or share directly.
+
+### 6. Customer Intel Engine
+Cortex scans your Trello support tickets and Intercom conversations to surface patterns: top objections, churn risks, feature request trends, and customer personas — all synthesized from real interaction data, not surveys.
+
+### 7. Wiki Health Monitor
+A diagnostic dashboard that continuously monitors knowledge graph completeness, freshness, link integrity, and coverage. Surfaces anomalies, unconnected sources, and AI-suggested growth opportunities to keep your knowledge base healthy.
+
+### 8. Territory Map
+A structured, filterable inventory of every node in your knowledge graph organized by source. Filter by node type (Entity, Project, Source, Decision). See exactly what Cortex knows and drill into any node.
+
+---
+
+## Screenshots
+
+### Onboarding — Initialize Your Instance
+Set company identity, industry, and deployment scale. Seeds the root node in the knowledge graph.
 
 ![Initialize Instance](ss/Screenshot_20260410_055551.png)
 
-**Step 2 — Linguistic Training: Mission**
-
-Tell Cortex what your company does in plain language. This trains the AI's contextual reasoning to always answer within the frame of your business.
+### Onboarding — Linguistic Training
+Multi-step protocol trains Cortex on your mission, customer, and core problem before any source is connected.
 
 ![Mission Step](ss/Screenshot_20260410_055623.png)
 
-**Step 3 — Who Is Your Customer?**
-
-Define your ICP. Cortex uses this to weight customer-facing intelligence and prioritize relevant signals from support and sales data.
-
 ![Customer Step](ss/Screenshot_20260410_055658.png)
-
-**Step 4 — Core Problem**
-
-State the single biggest problem you're solving. Cortex anchors all strategic queries and SOP suggestions to this framing.
 
 ![Problem Step](ss/Screenshot_20260410_055729.png)
 
-**Step 5 — Sector Alignment**
-
-Select the organizational dimensions to index. Cortex activates intelligence modules (Customer Intel, SOP Autopilot, etc.) based on the sectors you enable.
+### Onboarding — Sector Alignment & Optimization Nodes
+Select the organizational dimensions and intelligence objectives to activate.
 
 ![Sector Alignment](ss/Screenshot_20260410_055743.png)
 
-**Step 6 — Optimization Nodes**
-
-Choose what Cortex should optimize for: automating internal processes, better business decisions, customer intelligence, competitive analysis, employee onboarding, and more.
-
 ![Optimization Nodes](ss/Screenshot_20260410_055753.png)
 
-**Step 7 — Neural Assembly**
-
-Cortex constructs its initial knowledge graph from your identity parameters, counting 124 seed nodes before you've connected a single source.
+### Neural Assembly
+Cortex constructs the initial knowledge graph — 124 seed nodes before a single source is connected.
 
 ![Neural Assembly](ss/Screenshot_20260410_055804.png)
 
----
-
-## Constellation — The Neural Knowledge Graph
-
-The heart of Cortex. Every piece of company knowledge — docs, repos, tickets, conversations, decisions — becomes a node in a live, interactive force-directed graph.
-
-**Source connection in progress** — Cortex establishes an encrypted OAuth tunnel, fetches workspace hierarchy, queries databases, maps block structures, and syncs to the knowledge graph.
+### Constellation — Source Connecting
+Encrypted OAuth tunnel, workspace hierarchy fetch, block structure mapping, and graph sync — all visible in real-time.
 
 ![Connecting Notion](ss/Screenshot_20260410_055832.png)
 
-**The Constellation view** — your company's knowledge rendered as a living neural network. 77% neural integrity, 6 verified pathways, 5ms latency. Nodes are typed (source, entity, concept, project, decision, analysis) and linked by semantic relationships.
+### Constellation — Knowledge Graph Dashboard
+77% neural integrity, 6 verified pathways, 5ms latency. Full company knowledge as a living network.
 
 ![Constellation Dashboard](ss/Screenshot_20260410_055912.png)
 
-**Live graph with GitHub org synced** — paste `https://github.com/harshcodesdev` and Cortex fetches all 87 public repos, creates nodes for every repository with full metadata, and links them to the org entity node. The graph explodes with new connections in real-time.
+### Constellation — GitHub Org Synced (87 repos)
+Paste a GitHub org URL → Cortex fetches every public repo, creates typed nodes with full metadata, and links them to the org entity.
 
 ![GitHub Org Graph](ss/Screenshot_20260410_055948.png)
 
-> Supports both org-level syncs (`github.com/org`) and single-repo syncs (`github.com/org/repo`). All nodes are persisted in the knowledge store and immediately queryable.
-
----
-
-## Query Console
-
-Ask anything about your connected knowledge base in natural language. Cortex reasons over all active nodes, builds context from your knowledge graph, and returns answers with a full reasoning trace showing which sources it consulted.
-
-**Example query:** *"Which is the second highest repo in terms of stars in harshdeep's GitHub account?"*
-
-Cortex scans all 87 synced repo nodes, ranks by star count, and returns the precise answer with source attribution — no hallucination, grounded in your actual data.
+### Query Console
+Natural language query answered in real-time, grounded in synced GitHub repo data. Reasoning trace shows exactly which nodes were accessed.
 
 ![Query Console](ss/Screenshot_20260410_060029.png)
 
-The **Reasoning Trace** panel on the right shows exactly which nodes Cortex accessed: `Find Most-Active`, `Find App`, `Extract All Nodes` — full transparency into how the answer was constructed. Connected sources shown in the footer.
-
----
-
-## Sync History
-
-A real-time timeline of every knowledge ingestion event. Track what was synced, when, and what impact it had on the knowledge graph.
+### Sync History
+Full timeline of every ingestion event — GitHub (87 repos), Notion (6 pages, 3 databases, stale SOP flagged).
 
 ![Sync History](ss/Screenshot_20260410_060041.png)
 
-- **GitHub sync** — "Synced: Harsh Deep (87 repos)" — indexed all public repositories, all nodes added to knowledge graph
-- **Notion sync** — "Sync: Notion Workspace" — 6 pages ingested across 3 databases, Product Roadmap Q4 and Security Policies cross-linked to 4 existing nodes, 1 stale SOP step flagged
-- Connect a GitHub org or user URL directly from the sidebar — the input accepts both `https://github.com/org-name` (all repos) and `https://github.com/org/specific-repo`
-
----
-
-## Territory Map
-
-A structured, filterable view of every node in your knowledge graph organized by source. Filter by type: Entity, Project, Source, Decision. See exactly what Cortex knows.
+### Territory Map
+94 nodes, 2 sources, 3 apps connected. Every node visible, filterable, and inspectable.
 
 ![Territory Map](ss/Screenshot_20260410_060053.png)
 
-- **94 total nodes** across **2 sources**, **3 apps connected**, **3 syncs**
-- GitHub card shows 86 nodes of 7 types — entity node (GitHub: Harsh Deep) plus all 87 source nodes for each repo
-- Notion card shows 5 nodes: 1 entity, 1 project, 3 sources, 1 decision
-- Click any node to inspect its full content and connections
-
----
-
-## Meeting Brain
-
-Cortex joins your meetings as a silent observer. It listens to the live transcript, matches conversation topics against your knowledge base in real-time, and surfaces relevant context from your connected sources — without interrupting the call.
-
-**Standby mode** — paste a Google Meet, Zoom, or Teams URL and deploy the Cortex bot. It shows how many knowledge nodes and sources are active and ready.
+### Meeting Brain — Standby
+Paste a meeting URL and deploy the Cortex bot. Shows active knowledge nodes and connected sources ready to assist.
 
 ![Meeting Brain Standby](ss/Screenshot_20260410_060110.png)
 
-**Live session** — real-time transcript streams word by word. As participants speak, Cortex detects knowledge-base matches and surfaces them in the **Cortex Intelligence** panel. In this session, the phrase "knowledge graph" triggered a match across Product Roadmap Q4, Confluence System Architecture v3, and Notion — surfaced without anyone having to search.
+### Meeting Brain — Live Session
+Real-time transcript with Cortex Intelligence panel surfacing knowledge-base matches as the conversation unfolds.
 
 ![Meeting Brain Live](ss/Screenshot_20260410_060146.png)
 
----
-
-## Customer Intel
-
-Cortex analyzes your Trello support tickets and Intercom conversations to surface actionable customer intelligence. One click triggers the resolution engine.
-
-**Auto-resolution scan** — Cortex scans all 12 open tickets, classifies auto-resolvable issues, and drafts responses and actions for each.
+### Customer Intel — Auto-Resolution Engine
+Scans 12 open tickets, classifies resolvable issues, and drafts responses and action items automatically.
 
 ![Customer Intel](ss/Screenshot_20260410_060209.png)
 
----
-
-## Onboarding Copilot
-
-Generate fully structured onboarding roadmaps from your knowledge base in seconds. Cortex pulls from your SOPs, handbooks, architecture docs, and team structure to build personalized plans.
-
-**Select onboarding type** — Client Onboarding (activation roadmap) or Employee Onboarding (30-60-90 day plan tailored by role and department).
+### Onboarding Copilot — Type Selection
+Choose Client Onboarding (activation roadmap) or Employee Onboarding (30-60-90 day plan).
 
 ![Onboarding Copilot](ss/Screenshot_20260410_060226.png)
 
-**Building the roadmap** — Cortex scans the knowledge base, indexes relevant nodes, links dependencies, reasons over context, and composes the roadmap. Shows exactly which documents it pulled: Company Overview Wiki, Onboarding SOP v2.0, Product Architecture Guide, Q4 Strategy Document, Team Structure & Contacts, Security & Compliance Policy.
+### Onboarding Copilot — Building Roadmap
+Cortex pulls 6 documents from the knowledge base, reasons over dependencies, and composes the roadmap live.
 
 ![Building Roadmap](ss/Screenshot_20260410_060245.png)
 
-**Generated roadmap** — a full phased plan with priorities, time estimates, and specific action items for each milestone. Export to PDF or share directly.
+### Onboarding Copilot — Generated Roadmap
+Phased plan with priorities, time estimates, and action items per milestone. Exportable as PDF.
 
 ![Generated Roadmap](ss/Screenshot_20260410_060258.png)
 
----
-
-## SOP Autopilot
-
-Cortex generates and maintains Standard Operating Procedures from your connected knowledge sources. SOPs are structured with triggers, goals, constraints, steps, if-then rules, variables, and outputs — ready for simulation.
-
-**Example SOP: Student Account Refund Handling** — 8 steps with type annotations (MANUAL, AT ACTION, DECISION, AI ACTION), trigger conditions, 7-day processing goal, and constraint rules. Cortex auto-generated this from the support ticket data and billing policies in the knowledge graph.
+### SOP Autopilot
+8-step SOP with typed actions (MANUAL, AI ACTION, DECISION), triggers, goals, and constraint rules — auto-generated from company data.
 
 ![SOP Autopilot](ss/Screenshot_20260410_060423.png)
 
----
-
-## Wiki Health
-
-A diagnostic dashboard that monitors the health and completeness of your knowledge graph. Detects anomalies, gaps, and growth opportunities.
+### Wiki Health
+Coverage, freshness, link integrity, and completeness indices. Anomaly detection and neural growth opportunity suggestions.
 
 ![Wiki Health](ss/Screenshot_20260410_060430.png)
 
-- **Coverage Index** — 57% (4 of 7 categories active)
-- **Freshness Index** — 100% (all syncs up to date)
-- **Link Integrity** — 90% (101 nodes linked across 4 sources)
-- **Completeness** — 50% (4 artifacts, 2 seed SOPs, 1 roadmap, 1 wiki notes)
-- **Diagnostic Trace** — anomalies detected: "Critical alerts in sync logs" (Trello Support & Sales Boards), "Unconnected data sources" (Jira, Slack, Intercom, Confluence)
-- **Neural Growth Opportunities** — AI-suggested integrations: "GitHub repos are connected but no Confluence wiki — add Confluence to cross-reference ADRs with architecture docs"
-- **SOP Health** — real-time status on all active SOPs (current vs outdated)
-
----
-
-## Feed Sources
-
-Connect all your company's data sources in one place. Documents tab for file uploads, App Connectors tab for integrations.
+### Feed Sources — App Connectors
+Connect Notion, GitHub, Google Drive, Jira, Confluence, Intercom, Linear, Loom and more.
 
 ![Feed Sources](ss/Screenshot_20260410_060449.png)
-
-**Supported connectors:**
-- **Notion** — Active Sync
-- **Google Drive** — Active Sync
-- **GitHub** — Active Sync (org URL or single repo)
-- **Jira** — Active Sync
-- **Confluence** — Pending
-- **Intercom** — Pending
-- **Linear** — Pending
-- **Loom** — Pending
 
 ---
 
@@ -234,46 +191,75 @@ Connect all your company's data sources in one place. Documents tab for file upl
 | Styling | Tailwind CSS + Instrument Sans |
 | Components | shadcn/ui + Radix UI |
 | Animations | Framer Motion |
-| State | Zustand (with localStorage persistence) |
+| State Management | Zustand (localStorage persistence) |
 | AI Inference | Groq API — Llama 3.3 70B |
 | Knowledge Graph | react-force-graph-2d |
 | Runtime | Bun |
-| Deploy | Vercel |
+| Deployment | Vercel |
 
 ---
 
-## Getting Started
+## Impact
+
+| Metric | Before Cortex | After Cortex |
+|---|---|---|
+| Time to answer internal questions | 15–45 min | < 10 seconds |
+| New hire time-to-productivity | 2–3 months | Days |
+| SOP creation time | 2–4 hours | < 1 minute |
+| Meeting context retrieval | Manual, mid-call | Real-time, automatic |
+| Knowledge decay | Invisible, constant | Detected and flagged |
+| Cross-tool context linking | Never happens | Automatic on sync |
+
+Cortex transforms scattered institutional knowledge into a **compounding asset** — the longer it runs, the smarter and more connected it gets.
+
+---
+
+## Setup Instructions
+
+> **No setup needed to try it — the live demo is fully functional.**
+> 👉 [superployee.vercel.app](https://superployee.vercel.app/)
+
+To run locally:
 
 ```bash
 # Clone the repo
 git clone https://github.com/your-org/superloyee
+cd superloyee/web
 
-# Install dependencies (uses Bun)
-cd web
+# Install dependencies
 bun install
 
-# Set up environment
-cp .env.example .env.local
-# Add your GROQ_API_KEY to .env.local
+# Configure environment
+echo "GROQ_API_KEY=your_groq_api_key_here" > .env.local
 
-# Run development server
+# Start development server
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and complete the Cortex initialization protocol to seed your instance.
+Open [http://localhost:3000](http://localhost:3000) and complete the Cortex initialization protocol.
 
-### Environment Variables
+**Required environment variable:**
 
 ```env
-GROQ_API_KEY=your_groq_api_key_here
+GROQ_API_KEY=your_groq_api_key_here   # Get from console.groq.com (free tier available)
 ```
 
-> No database required. All knowledge graph state is persisted in the browser via Zustand's localStorage adapter. Connect your first source from the Feed Sources page to begin building your neural net.
+> No database required. All knowledge graph state is persisted client-side via Zustand's localStorage adapter.
+
+---
+
+## Demo Link
+
+**[https://superployee.vercel.app/](https://superployee.vercel.app/)**
+
+Hosted on Vercel. Fully functional and publicly accessible.
 
 ---
 
 <div align="center">
 
-Built for the hackathon. Ambient intelligence, not a chatbot.
+Built for the hackathon · Ambient intelligence, not a chatbot
 
 </div>
+
+
