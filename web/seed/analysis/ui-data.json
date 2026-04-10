@@ -1,0 +1,204 @@
+{
+  "sops": [
+    {
+      "id": "sec-1",
+      "title": "Security Incident Protocol",
+      "department": "Engineering",
+      "status": "current",
+      "lastUpdated": "2 hours ago",
+      "staleSteps": 0,
+      "totalSteps": 5,
+      "steps": [
+        {
+          "text": "Isolate affected subnet",
+          "current": true,
+          "source": "Network Policy"
+        },
+        {
+          "text": "Initiate snapshot of core DB",
+          "current": true,
+          "source": "Database Guard"
+        },
+        {
+          "text": "Notify legal team via encrypted channel",
+          "current": true,
+          "source": "Compliance Wiki"
+        },
+        {
+          "text": "Review recent GitHub commits for cortex-core",
+          "current": true,
+          "source": "GitHub Sync"
+        },
+        {
+          "text": "Update firewall rules",
+          "current": true,
+          "source": "Infrastructure Wiki"
+        }
+      ]
+    },
+    {
+      "id": "hr-1",
+      "title": "Engineer Onboarding",
+      "department": "HR",
+      "status": "outdated",
+      "lastUpdated": "3 days ago",
+      "staleSteps": 2,
+      "totalSteps": 6,
+      "steps": [
+        {
+          "text": "Assign GitHub permissions",
+          "current": true,
+          "source": "IT Policy"
+        },
+        {
+          "text": "Schedule intro with CTO",
+          "current": true,
+          "source": "Calendar Sync"
+        },
+        {
+          "text": "Send Slack invite to #general",
+          "current": false,
+          "staleNote": "Now using #announcements for new hires",
+          "source": "Slack Policy Update"
+        },
+        {
+          "text": "Review security training docs",
+          "current": true,
+          "source": "Compliance Wiki"
+        },
+        {
+          "text": "Provision hardware",
+          "current": false,
+          "staleNote": "New vendor for laptops",
+          "source": "Ops Decision"
+        },
+        {
+          "text": "Initial project assignment",
+          "current": true,
+          "source": "Jira Workspace"
+        }
+      ]
+    }
+  ],
+  "syncHistory": [
+    {
+      "id": "s1",
+      "source": "github",
+      "timestamp": "12 MINUTES AGO",
+      "title": "Sync: repository/cortex-core",
+      "description": "Merged 4 architectural decision records (ADRs) into the knowledge base. Updated Pinecone client to v2.",
+      "impact": [
+        "Cortex Core Engine",
+        "System Architecture"
+      ],
+      "status": "completed"
+    },
+    {
+      "id": "s2",
+      "source": "notion",
+      "timestamp": "45 MINUTES AGO",
+      "title": "Ingested: Board Meeting Minutes",
+      "description": "Analyzed board decisions for Q4. Project Phoenix priority escalated to High.",
+      "impact": [
+        "Project Phoenix",
+        "Executive Strategy"
+      ],
+      "status": "completed",
+      "alert": true
+    },
+    {
+      "id": "s3",
+      "source": "slack",
+      "timestamp": "1 HOUR AGO",
+      "title": "Sync: #security-alerts",
+      "description": "Detected discussion on recent firewall changes. Synced to Security Incident Protocol.",
+      "impact": [
+        "Security Protocol",
+        "Compliance"
+      ],
+      "status": "completed"
+    },
+    {
+      "id": "s4",
+      "source": "jira",
+      "timestamp": "JUST NOW",
+      "title": "Synchronizing: Project Phoenix Tickets",
+      "description": "Scanning 42 tickets for roadmap alignment and bottleneck identification.",
+      "impact": [
+        "Project Phoenix",
+        "Capacity Planning"
+      ],
+      "status": "syncing"
+    }
+  ],
+  "customerIntel": {
+    "totalInteractions": "1,452",
+    "satisfactionIndex": "94%",
+    "avgNps": "4.8",
+    "churnVectors": "5",
+    "objections": [
+      {
+        "name": "Security Compliance",
+        "count": 82,
+        "segment": "Enterprise",
+        "trend": "up"
+      },
+      {
+        "name": "API Documentation",
+        "count": 45,
+        "segment": "Developers",
+        "trend": "down"
+      },
+      {
+        "name": "Pricing Structure",
+        "count": 31,
+        "segment": "SMB",
+        "trend": "flat"
+      }
+    ],
+    "featureRequests": [
+      {
+        "name": "SSO Integration",
+        "mentions": 112,
+        "priority": "high"
+      },
+      {
+        "name": "Multi-region Hosting",
+        "mentions": 68,
+        "priority": "high"
+      },
+      {
+        "name": "Mobile SDK",
+        "mentions": 42,
+        "priority": "medium"
+      }
+    ],
+    "personas": [
+      {
+        "title": "The Enterprise Security Lead",
+        "size": "1000+",
+        "pain": "Uncontrolled data fragmentation",
+        "value": "Neural audit trails"
+      },
+      {
+        "title": "The Growth PM",
+        "size": "50-200",
+        "pain": "Decision latency in sprints",
+        "value": "Instant context retrieval"
+      }
+    ]
+  },
+  "dashboardStats": {
+    "integrity": 98,
+    "totalFiles": 142,
+    "latency": "8ms",
+    "typeCounts": {
+      "source": 24,
+      "entity": 18,
+      "concept": 12,
+      "project": 32,
+      "decision": 15,
+      "analysis": 41
+    }
+  }
+}

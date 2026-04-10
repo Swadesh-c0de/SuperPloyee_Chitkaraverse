@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+!wiki/log.md
+.env
+.env.local
+tmp/
