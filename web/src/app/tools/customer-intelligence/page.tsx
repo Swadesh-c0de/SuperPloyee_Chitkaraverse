@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNeuralStore } from "@/lib/store";
-import { SOURCE_SEEDS, TRELLO_DATA, CUSTOMER_INTEL_DATA } from "@/lib/neural-seed";
+import { SOURCE_SEEDS, CUSTOMER_INTEL_DATA } from "@/lib/neural-seed";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ import {
   BarChart3, Users, Star, Shield, Play,
   ChevronDown, RotateCcw, Sparkles,
   TicketCheck, DollarSign, Activity,
+  MessageSquare, X, Send, Loader2, Bot, User,
 } from "lucide-react";
 
 // ── Analysis phases (tool-call animation) ──────────────────────────────────
@@ -85,6 +86,7 @@ export default function CustomerIntelligencePage() {
   const { isAppConnected, connectApp, addSyncLog, commitPending } = useNeuralStore();
   const isTrelloConnected = isAppConnected("TRELLO");
 
+  const [mounted, setMounted] = useState(false);
   // view: "connect" | "data" | "analyzing" | "dashboard" | "resolving" | "resolved"
   const [view, setView] = useState<"connect"|"data"|"analyzing"|"dashboard"|"resolving"|"resolved">("connect");
   const [connecting, setConnecting] = useState(false);
@@ -97,6 +99,17 @@ export default function CustomerIntelligencePage() {
   const [groqIntel, setGroqIntel] = useState<any>(null);
   const [groqResolutions, setGroqResolutions] = useState<any>(null);
   const [groqError, setGroqError] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string; actionResults?: string[] }[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLTextAreaElement>(null);
+  const [liveTrelloData, setLiveTrelloData] = useState<{
+    supportTickets: any[];
+    salesPipeline: any[];
+    rawCards: any[];
+  }>({ supportTickets: [], salesPipeline: [], rawCards: [] });
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const schedule = useCallback((fn: () => void, ms: number) => {
@@ -104,24 +117,174 @@ export default function CustomerIntelligencePage() {
     timersRef.current.push(t);
   }, []);
 
-  // Sync with persisted state on mount
+  // Fetch live Trello data (runs on mount if already connected, or after handleConnect sets data)
+  const fetchLiveTrello = useCallback(async () => {
+    try {
+      const res = await fetch("/api/trello?action=all");
+      const json = await res.json();
+      if (json.error) return;
+
+      const allCards: any[] = [];
+      const supportTickets: any[] = [];
+      const salesPipeline: any[] = [];
+
+      for (const { board, lists, cards } of json.boardData) {
+        const listMap: Record<string, string> = {};
+        for (const l of lists) listMap[l.id] = l.name;
+
+        for (const card of cards) {
+          allCards.push({ ...card, boardName: board.name, listName: listMap[card.idList] ?? "Unknown" });
+          const listName = (listMap[card.idList] ?? "").toLowerCase();
+          const labels = card.labels?.map((l: any) => (l.name || l.color)).join(", ") ?? "";
+          const isResolved = listName.includes("done") || listName.includes("resolv") || listName.includes("closed") || listName.includes("won");
+          const isInProgress = listName.includes("progress") || listName.includes("doing") || listName.includes("review");
+
+          const isSalesDeal =
+            listName.includes("discovery") || listName.includes("demo") ||
+            listName.includes("proposal") || listName.includes("negotiat") ||
+            listName.includes("pipeline") || listName.includes("lead") ||
+            (board.name ?? "").toLowerCase().includes("sale") ||
+            (board.name ?? "").toLowerCase().includes("pipeline") ||
+            (board.name ?? "").toLowerCase().includes("crm");
+
+          if (isSalesDeal) {
+            salesPipeline.push({
+              id: card.id,
+              company: card.name,
+              value: 0,
+              stage: listMap[card.idList] ?? "Unknown",
+              probability: isResolved ? 100 : isInProgress ? 70 : 50,
+              owner: "—",
+              lastActivity: card.dateLastActivity
+                ? new Date(card.dateLastActivity).toLocaleDateString()
+                : "—",
+              notes: card.desc?.slice(0, 120) || labels || "—",
+              shortUrl: card.shortUrl,
+              _cardId: card.id,
+            });
+          } else {
+            const labelLower = labels.toLowerCase();
+            const priority =
+              labelLower.includes("critical") || labelLower.includes("p0") ? "critical" :
+              labelLower.includes("high")     || labelLower.includes("p1") ? "high" :
+              labelLower.includes("medium")   || labelLower.includes("p2") ? "medium" : "low";
+            supportTickets.push({
+              id: card.id.slice(-6).toUpperCase(),
+              title: card.name,
+              priority,
+              status: isResolved ? "resolved" : isInProgress ? "in_progress" : "open",
+              customer: board.name,
+              category: labels || listMap[card.idList] || "General",
+              created: card.dateLastActivity
+                ? new Date(card.dateLastActivity).toLocaleDateString()
+                : "—",
+              assignee: "—",
+              notes: card.desc?.slice(0, 200) || "—",
+              shortUrl: card.shortUrl,
+              _cardId: card.id,
+            });
+          }
+        }
+      }
+
+      setLiveTrelloData({ supportTickets, salesPipeline, rawCards: allCards });
+    } catch {
+      // silently fail — UI will show empty state
+    }
+  }, []);
+
+  // Sync with persisted state on mount — also sets mounted to unblock render
   useEffect(() => {
-    if (isTrelloConnected) setView("dashboard");
+    setMounted(true);
+    if (isTrelloConnected) {
+      setView("dashboard");
+      fetchLiveTrello();
+    }
   }, []);
 
   useEffect(() => () => timersRef.current.forEach(clearTimeout), []);
 
+  useEffect(() => {
+    if (chatOpen) setTimeout(() => chatInputRef.current?.focus(), 100);
+  }, [chatOpen]);
+
+  useEffect(() => {
+    chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages, chatLoading]);
+
+  const buildTrelloContext = useCallback(() => {
+    const tickets = liveTrelloData.supportTickets;
+    const deals = liveTrelloData.salesPipeline;
+    const boards = Array.from(new Set(liveTrelloData.rawCards.map((c: any) => c.boardName)));
+    return [
+      `Boards: ${boards.join(", ") || "(none loaded)"}`,
+      ``,
+      `SUPPORT TICKETS (${tickets.length}):`,
+      ...tickets.map((t: any) => `- [${t._cardId}] ${t.title} | list: ${t.category} | priority: ${t.priority} | status: ${t.status}`),
+      ``,
+      `SALES/PIPELINE CARDS (${deals.length}):`,
+      ...deals.map((d: any) => `- [${d._cardId}] ${d.company} | list: ${d.stage}`),
+    ].join("\n");
+  }, [liveTrelloData]);
+
+  const sendChatMessage = useCallback(async () => {
+    const text = chatInput.trim();
+    if (!text || chatLoading) return;
+    const userMsg = { role: "user" as const, content: text };
+    const nextMessages = [...chatMessages, userMsg];
+    setChatMessages(nextMessages);
+    setChatInput("");
+    setChatLoading(true);
+    try {
+      const res = await fetch("/api/trello-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: nextMessages.map(m => ({ role: m.role, content: m.content })),
+          trelloContext: buildTrelloContext(),
+        }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setChatMessages(prev => [
+        ...prev,
+        { role: "assistant", content: data.text, actionResults: data.actionResults },
+      ]);
+      if (data.actionResults?.length) await fetchLiveTrello();
+    } catch (err: any) {
+      setChatMessages(prev => [
+        ...prev,
+        { role: "assistant", content: `Error: ${err.message}` },
+      ]);
+    } finally {
+      setChatLoading(false);
+    }
+  }, [chatInput, chatLoading, chatMessages, buildTrelloContext, fetchLiveTrello]);
+
   // ── Connect Trello ──
-  const handleConnect = () => {
+  const handleConnect = async () => {
     setConnecting(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/trello?action=all");
+      const json = await res.json();
+      if (json.error) throw new Error(json.error);
+
+      await fetchLiveTrello();
+
       connectApp("TRELLO");
       const seed = SOURCE_SEEDS.TRELLO;
-      addSyncLog(seed.syncLog);
+      addSyncLog({
+        ...seed.syncLog,
+        description: `Cards ingested from real Trello boards.`,
+        impact: json.boardData.map((b: any) => b.board.name).slice(0, 4),
+      });
       commitPending(seed.nodes, seed.links);
       setConnecting(false);
       setView("data");
-    }, 1800);
+    } catch (err: any) {
+      console.error("Trello connect error:", err);
+      setConnecting(false);
+    }
   };
 
   // ── Start analysis animation + fire Groq analyze ──
@@ -148,7 +311,7 @@ export default function CustomerIntelligencePage() {
     fetch("/api/customer-intel", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode: "analyze", tickets: TRELLO_DATA.supportTickets, deals: TRELLO_DATA.salesPipeline }),
+      body: JSON.stringify({ mode: "analyze", tickets: liveTrelloData.supportTickets, deals: liveTrelloData.salesPipeline }),
     })
       .then(r => r.json())
       .then(data => { if (!data.error) setGroqIntel(data); })
@@ -190,12 +353,33 @@ export default function CustomerIntelligencePage() {
     fetch("/api/customer-intel", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode: "resolve", tickets: TRELLO_DATA.supportTickets }),
+      body: JSON.stringify({ mode: "resolve", tickets: liveTrelloData.supportTickets }),
     })
       .then(r => r.json())
       .then(data => {
-        if (!data.error) setGroqResolutions(data);
-        else setGroqError("Resolution failed — showing mock data");
+        if (!data.error) {
+          setGroqResolutions(data);
+          // Post resolution comments back to Trello
+          if (data.resolutions) {
+            const ticketMap: Record<string, string> = {};
+            for (const t of liveTrelloData.supportTickets) {
+              ticketMap[t.id] = t._cardId;
+            }
+            for (const r of data.resolutions) {
+              const cardId = ticketMap[r.id];
+              if (cardId) {
+                const comment = `🤖 Cortex AI [${r.resolution === "auto" ? "Auto-Resolved" : "Escalated"}]: ${r.action}\n${r.note}`;
+                fetch("/api/trello", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ action: "add-comment", cardId, text: comment }),
+                }).catch(() => {});
+              }
+            }
+          }
+        } else {
+          setGroqError("Resolution failed");
+        }
       })
       .catch(() => setGroqError("Network error — showing mock data"));
 
@@ -204,6 +388,8 @@ export default function CustomerIntelligencePage() {
       setTimeout(() => setView("resolved"), 500);
     }, elapsed + 400);
   };
+
+  if (!mounted) return null;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // VIEW: CONNECT
@@ -260,7 +446,7 @@ export default function CustomerIntelligencePage() {
             )}
           </Button>
 
-          <p className="text-[10px] text-white/20 font-mono">Mock OAuth — no real credentials required</p>
+          <p className="text-[10px] text-white/20 font-mono">Connects to your real Trello workspace</p>
         </motion.div>
       </div>
     );
@@ -270,8 +456,8 @@ export default function CustomerIntelligencePage() {
   // VIEW: RAW DATA
   // ═══════════════════════════════════════════════════════════════════════════
   if (view === "data") {
-    const tickets = TRELLO_DATA.supportTickets;
-    const deals   = TRELLO_DATA.salesPipeline;
+    const tickets = liveTrelloData.supportTickets;
+    const deals   = liveTrelloData.salesPipeline;
 
     return (
       <div className="flex h-screen flex-col bg-background">
@@ -480,7 +666,7 @@ export default function CustomerIntelligencePage() {
         <div className="w-full max-w-xl space-y-10">
           <div className="space-y-2">
             <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">Cortex AI Resolution Engine</p>
-            <h2 className="text-xl font-black text-white">Resolving {TRELLO_DATA.supportTickets.length} tickets…</h2>
+            <h2 className="text-xl font-black text-white">Resolving {liveTrelloData.supportTickets.length} tickets…</h2>
           </div>
 
           <div className="space-y-3">
@@ -531,8 +717,8 @@ export default function CustomerIntelligencePage() {
   // VIEW: RESOLVED — final processed dashboard
   // ═══════════════════════════════════════════════════════════════════════════
   if (view === "resolved") {
-    const tickets   = TRELLO_DATA.supportTickets;
-    const deals     = TRELLO_DATA.salesPipeline;
+    const tickets   = liveTrelloData.supportTickets;
+    const deals     = liveTrelloData.salesPipeline;
     const intel     = CUSTOMER_INTEL_DATA;
     const resData   = groqResolutions;
     const resMap: Record<string, { resolution: string; note: string; action: string }> = {};
@@ -711,15 +897,160 @@ export default function CustomerIntelligencePage() {
   // VIEW: DASHBOARD
   // ═══════════════════════════════════════════════════════════════════════════
   const intel   = CUSTOMER_INTEL_DATA;
-  const tickets = TRELLO_DATA.supportTickets;
-  const deals   = TRELLO_DATA.salesPipeline;
+  const tickets = liveTrelloData.supportTickets;
+  const deals   = liveTrelloData.salesPipeline;
   const openTickets      = tickets.filter(t => t.status !== "resolved").length;
   const criticalTickets  = tickets.filter(t => t.priority === "critical").length;
   const totalPipeline    = deals.reduce((s, d) => s + d.value, 0);
   const closedWon        = deals.filter(d => d.stage === "Closed Won").reduce((s, d) => s + d.value, 0);
 
+  const ChatPanel = (
+    <>
+      {/* Toggle button */}
+      <button
+        onClick={() => setChatOpen(o => !o)}
+        className={cn(
+          "fixed bottom-6 right-6 z-50 w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shadow-2xl",
+          chatOpen
+            ? "bg-white text-background border-white"
+            : "bg-background/90 backdrop-blur-xl text-white/60 border-white/15 hover:border-white/30 hover:text-white"
+        )}
+      >
+        {chatOpen ? <X className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
+      </button>
+
+      {/* Panel */}
+      <AnimatePresence>
+        {chatOpen && (
+          <motion.div
+            key="chat-panel"
+            initial={{ opacity: 0, x: 40, scale: 0.97 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 40, scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 320, damping: 30 }}
+            className="fixed bottom-22 right-6 z-50 w-[420px] max-h-[600px] flex flex-col rounded-2xl border border-white/10 bg-[#0d0d0d] shadow-2xl overflow-hidden"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/6 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-6 h-6 rounded-lg bg-white/8 border border-white/10 flex items-center justify-center">
+                  <Bot className="h-3 w-3 text-white/50" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-black text-white/70 uppercase tracking-widest">Trello Assistant</p>
+                  <p className="text-[9px] text-white/25 font-mono">Ask anything · Take actions</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
+                <span className="text-[9px] font-mono text-white/25">Live</span>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4">
+              {chatMessages.length === 0 && (
+                <div className="space-y-3">
+                  <p className="text-[10px] text-white/25 font-mono text-center">Connected to your Trello workspace</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {[
+                      "What are my critical tickets?",
+                      "Add a comment to the first card saying 'Under review'",
+                      "Show me all open tickets",
+                      "Move card [name] to Done",
+                    ].map(q => (
+                      <button key={q} onClick={() => { setChatInput(q); chatInputRef.current?.focus(); }}
+                        className="text-left text-[10px] text-white/40 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/6 hover:bg-white/[0.06] hover:text-white/60 hover:border-white/12 transition-all">
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={cn("flex gap-2.5", msg.role === "user" ? "flex-row-reverse" : "flex-row")}>
+                  <div className={cn(
+                    "w-6 h-6 rounded-lg shrink-0 flex items-center justify-center mt-0.5",
+                    msg.role === "user" ? "bg-white/10" : "bg-white/5 border border-white/8"
+                  )}>
+                    {msg.role === "user"
+                      ? <User className="h-3 w-3 text-white/50" />
+                      : <Bot className="h-3 w-3 text-white/40" />}
+                  </div>
+                  <div className={cn("max-w-[85%] space-y-2", msg.role === "user" ? "items-end" : "items-start")}>
+                    <div className={cn(
+                      "px-3.5 py-2.5 rounded-xl text-[12px] leading-relaxed",
+                      msg.role === "user"
+                        ? "bg-white/10 text-white/80 rounded-tr-sm"
+                        : "bg-white/[0.04] border border-white/6 text-white/70 rounded-tl-sm"
+                    )}>
+                      {msg.content}
+                    </div>
+                    {msg.actionResults && msg.actionResults.length > 0 && (
+                      <div className="space-y-1">
+                        {msg.actionResults.map((r, ri) => (
+                          <div key={ri} className="flex items-start gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/8">
+                            <span className="text-[10px] text-white/50 leading-relaxed font-mono">{r}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="flex gap-2.5">
+                  <div className="w-6 h-6 rounded-lg bg-white/5 border border-white/8 flex items-center justify-center shrink-0">
+                    <Bot className="h-3 w-3 text-white/40" />
+                  </div>
+                  <div className="px-3.5 py-2.5 rounded-xl rounded-tl-sm bg-white/[0.04] border border-white/6">
+                    <div className="flex items-center gap-1">
+                      {[0,1,2].map(i => (
+                        <motion.div key={i} className="w-1 h-1 rounded-full bg-white/30"
+                          animate={{ opacity: [0.3, 1, 0.3] }}
+                          transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={chatBottomRef} />
+            </div>
+
+            {/* Input */}
+            <div className="shrink-0 border-t border-white/6 px-3 py-3">
+              <div className="flex items-end gap-2 bg-white/[0.03] border border-white/8 rounded-xl px-3 py-2.5 focus-within:border-white/20 transition-colors">
+                <textarea
+                  ref={chatInputRef}
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } }}
+                  placeholder="Ask or command… (Enter to send)"
+                  rows={1}
+                  className="flex-1 bg-transparent text-[12px] text-white/80 placeholder:text-white/20 resize-none outline-none leading-relaxed max-h-28 overflow-y-auto"
+                  style={{ fieldSizing: "content" } as React.CSSProperties}
+                />
+                <button
+                  onClick={sendChatMessage}
+                  disabled={!chatInput.trim() || chatLoading}
+                  className="w-7 h-7 rounded-lg bg-white flex items-center justify-center shrink-0 disabled:opacity-30 hover:opacity-80 transition-opacity"
+                >
+                  {chatLoading
+                    ? <Loader2 className="h-3 w-3 text-background animate-spin" />
+                    : <Send className="h-3 w-3 text-background" />}
+                </button>
+              </div>
+              <p className="text-[9px] text-white/15 font-mono mt-1.5 px-1">Shift+Enter for newline · actions post to real Trello</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-background">
+      {ChatPanel}
       {/* Toolbar */}
       <div className="sticky top-0 z-40 flex items-center justify-between h-14 border-b border-white/5 bg-background/90 backdrop-blur-xl px-8">
         <div className="flex items-center gap-4">

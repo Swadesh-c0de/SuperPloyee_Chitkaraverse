@@ -1,0 +1,12 @@
+{
+  "name": "meet-bot",
+  "version": "1.0.0",
+  "description": "Google Meet bot using Playwright",
+  "private": true,
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "playwright": "^1.59.1",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}

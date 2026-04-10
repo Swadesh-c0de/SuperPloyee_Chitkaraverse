@@ -1,21 +1,21 @@
 ---
 type: entity
 entity_type: company
-title: Superployee
-created: '2026-04-10T00:28:05.592Z'
-updated: '2026-04-10T00:28:05.592Z'
+title: x
+created: '2026-04-10T05:51:23.581Z'
+updated: '2026-04-10T05:51:23.581Z'
 status: active
 tags:
   - onboarding-core
 ---
 ## Mission Overview
 
-we provide agenetic growing memory for businesses
+x
 
 ## Target Customer
 
-early to mid stage Corporate bussiness
+x
 
 ## Core Problem
 
-We are solving the memory and context problem!!
+x

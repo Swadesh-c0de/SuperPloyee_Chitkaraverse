@@ -1,9 +1,14 @@
 import { NextRequest } from "next/server";
-import Groq from "groq-sdk";
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+import { getGroqClient } from "@/lib/groq";
 
 export async function POST(req: NextRequest) {
+  let groq: Awaited<ReturnType<typeof getGroqClient>>;
+  try {
+    groq = await getGroqClient();
+  } catch (err: any) {
+    return Response.json({ error: err.message }, { status: 500 });
+  }
+
   const { filename, type, size, textPreview } = await req.json();
 
   const systemPrompt = `You are Cortex Ingestion Engine. Given document metadata and a text preview, generate a high-fidelity knowledge extraction. 

@@ -388,6 +388,11 @@ export default function QueryConsolePage() {
         signal: abortRef.current.signal,
       });
 
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody?.error ?? `API error ${res.status}`);
+      }
+
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
 
@@ -400,7 +405,9 @@ export default function QueryConsolePage() {
           const payload = line.slice(6).trim();
           if (payload === "[DONE]") break;
           try {
-            const { text } = JSON.parse(payload);
+            const parsed = JSON.parse(payload);
+            if (parsed.error) throw new Error(parsed.error);
+            const { text } = parsed;
             if (!streamStarted) {
               streamStarted = true;
               setToolState(null);
@@ -414,7 +421,9 @@ export default function QueryConsolePage() {
             }
             accumulated += text;
             updateMessage(assistantId, { content: accumulated });
-          } catch { /* partial */ }
+          } catch (parseErr: any) {
+            if (parseErr.message && !parseErr.message.startsWith("JSON")) throw parseErr;
+          }
         }
       }
 
@@ -430,7 +439,7 @@ export default function QueryConsolePage() {
         addMessage({
           id: assistantId,
           role: "assistant",
-          content: "Something went wrong connecting to the knowledge engine. Please try again.",
+          content: `Something went wrong: ${e.message ?? "unknown error"}. Please try again.`,
           timestamp: Date.now(),
         });
       }

@@ -1,20 +1,17 @@
 ---
 type: analysis
 title: Neural Net Overview
-created: '2026-04-10T00:28:05.592Z'
-updated: '2026-04-10T00:28:05.592Z'
+created: '2026-04-10T05:51:23.581Z'
+updated: '2026-04-10T05:51:23.581Z'
 sectors:
-  - Sales
   - Product
-  - Engineering
+  - Sales
   - Support
-  - HR & People
-  - Finance
+  - Engineering
 objectives:
   - automate-processes
   - better-decisions
-  - customer-intelligence
 tags:
   - system-meta
 ---
-System initialization complete. The knowledge base is now aligned for 6 sectors and 3 core objectives.
+System initialization complete. The knowledge base is now aligned for 4 sectors and 2 core objectives.

@@ -14,10 +14,15 @@ import {
   Activity,
   Network,
   Loader2,
+  Brain,
+  CheckCircle2,
+  AlertCircle,
+  FileText,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, animate } from "framer-motion";
-import { useOnboardingStore, useNeuralStore } from "@/lib/store";
+import { useOnboardingStore, useNeuralStore, type MeetingReport } from "@/lib/store";
 import { useRouter } from "next/navigation";
 
 function Digit({ digit }: { digit: string }) {
@@ -115,7 +120,7 @@ export default function ConstellationPage() {
   const { company } = useOnboardingStore();
   const {
     liveNodes, liveLinks, pendingNodes, pendingLinks,
-    connectedApps, isSyncing, setIsSyncing,
+    connectedApps, isSyncing, setIsSyncing, meetingReports,
   } = useNeuralStore();
 
   const hasPending = pendingNodes.length > 0;
@@ -420,6 +425,83 @@ export default function ConstellationPage() {
             )}
           </AnimatePresence>
         </section>
+        {/* Meeting Reports Feed */}
+        {meetingReports.length > 0 && (
+          <section className="space-y-6">
+            <div className="flex items-center gap-4">
+              <Brain className="h-4 w-4 text-white/30" />
+              <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">Post-Meeting Intelligence Feed</h3>
+              <div className="flex-1 h-[1px] bg-white/5" />
+              <span className="text-[9px] font-mono text-white/15">{meetingReports.length} report{meetingReports.length !== 1 ? "s" : ""}</span>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 responsive-gap">
+              {meetingReports.map((report) => (
+                <motion.div
+                  key={report.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ y: -4, borderColor: "rgba(255,255,255,0.12)" }}
+                  className="bg-surface-low border border-white/5 rounded-[2rem] p-8 space-y-6 group transition-all duration-300 tonal-shift shadow-xl cursor-pointer"
+                  onClick={() => router.push("/tools/meeting-brain")}
+                >
+                  {/* Report header */}
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-white/40" />
+                        <span className="text-[9px] font-black text-white/25 uppercase tracking-[0.3em]">Meeting Brain · Analysis</span>
+                      </div>
+                      <h4 className="text-sm font-bold text-white tracking-tight">{report.title}</h4>
+                    </div>
+                    <span className={cn(
+                      "text-[8px] font-black uppercase px-2.5 py-1 rounded-full border",
+                      report.sentiment === "positive" ? "border-white/20 text-white/60 bg-white/5" :
+                      report.sentiment === "negative" ? "border-white/10 text-white/30 bg-white/[0.02]" :
+                      "border-white/10 text-white/20 bg-white/[0.02]"
+                    )}>{report.sentiment}</span>
+                  </div>
+
+                  {/* Summary */}
+                  <p className="text-[12px] text-white/40 leading-relaxed line-clamp-2">{report.summary}</p>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { icon: CheckCircle2, val: report.decisions.length, label: "Decisions" },
+                      { icon: FileText,     val: report.actions.length,   label: "Actions" },
+                      { icon: AlertCircle,  val: report.unresolved.length, label: "Open Q" },
+                    ].map((s) => (
+                      <div key={s.label} className="flex flex-col items-center gap-1.5 bg-white/[0.03] rounded-xl py-3 px-2 border border-white/5">
+                        <s.icon className="h-3 w-3 text-white/20" />
+                        <span className="text-lg font-black text-white">{s.val}</span>
+                        <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">{s.label}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Top action item */}
+                  {report.actions[0] && (
+                    <div className="flex items-center gap-3 bg-white/[0.03] rounded-xl p-3 border border-white/5">
+                      <div className={cn("h-1.5 w-1.5 rounded-full shrink-0",
+                        report.actions[0].priority === "high" ? "bg-white" : "bg-white/30"
+                      )} />
+                      <p className="text-[11px] text-white/50 flex-1 line-clamp-1">{report.actions[0].text}</p>
+                      <ArrowRight className="h-3 w-3 text-white/15 shrink-0" />
+                    </div>
+                  )}
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[9px] text-white/15 font-mono">
+                      {new Date(report.timestamp).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    <span className="text-[9px] text-white/15 font-mono">{report.transcriptLines} segments</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

@@ -2,8 +2,8 @@
 title: Security Incident Protocol
 type: source
 source: NOTION
-created: '2026-04-09T19:02:37.000Z'
-updated: '2026-04-09T19:02:37.000Z'
+created: '2026-04-10T02:54:21.274Z'
+updated: '2026-04-10T02:54:21.274Z'
 tags:
   - seed-data
 ---

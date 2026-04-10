@@ -119,6 +119,21 @@ export const useWikiStore = create<WikiStore>()((set) => ({
   setLoading: (loading) => set({ loading }),
 }));
 
+export interface MeetingReport {
+  id: string;
+  title: string;
+  timestamp: number;
+  summary: string;
+  sentiment: string;
+  decisions: { text: string; owner: string; confidence: number }[];
+  actions: { text: string; owner: string; deadline: string; priority: string }[];
+  unresolved: string[];
+  kbMatches: { label: string; relevance: string }[];
+  riskFlags: string[];
+  followUpDraft: string;
+  transcriptLines: number;
+}
+
 interface NeuralStore {
   // Apps that have completed the OAuth flow
   connectedApps: string[];
@@ -132,6 +147,8 @@ interface NeuralStore {
   syncLogs: SeedSyncLog[];
   // SOPs visible in SOP autopilot
   sops: SeedSOP[];
+  // Post-meeting intelligence reports
+  meetingReports: MeetingReport[];
   // True while the sync animation is running
   isSyncing: boolean;
 
@@ -141,6 +158,7 @@ interface NeuralStore {
   commitPending: (nodes: SeedNode[], links: SeedLink[]) => void;
   addSyncLog: (log: SeedSyncLog) => void;
   addSops: (sops: SeedSOP[]) => void;
+  addMeetingReport: (report: MeetingReport) => void;
   setIsSyncing: (v: boolean) => void;
   reset: () => void;
 }
@@ -155,6 +173,7 @@ export const useNeuralStore = create<NeuralStore>()(
       pendingLinks: [],
       syncLogs: [],
       sops: [],
+      meetingReports: [],
       isSyncing: false,
 
       connectApp: (appName) => {
@@ -201,6 +220,11 @@ export const useNeuralStore = create<NeuralStore>()(
           ],
         })),
 
+      addMeetingReport: (report) =>
+        set((s) => ({
+          meetingReports: [report, ...s.meetingReports].slice(0, 20),
+        })),
+
       setIsSyncing: (v) => set({ isSyncing: v }),
 
       reset: () =>
@@ -212,6 +236,7 @@ export const useNeuralStore = create<NeuralStore>()(
           pendingLinks: [],
           syncLogs: [],
           sops: [],
+          meetingReports: [],
           isSyncing: false,
         }),
     }),

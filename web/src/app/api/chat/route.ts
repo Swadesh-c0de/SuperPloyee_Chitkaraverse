@@ -1,9 +1,14 @@
 import { NextRequest } from "next/server";
-import Groq from "groq-sdk";
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+import { getGroqClient } from "@/lib/groq";
 
 export async function POST(req: NextRequest) {
+  let groq: Awaited<ReturnType<typeof getGroqClient>>;
+  try {
+    groq = await getGroqClient();
+  } catch (err: any) {
+    return Response.json({ error: err.message }, { status: 500 });
+  }
+
   const { messages, context } = await req.json();
 
   const systemPrompt = `You are Cortex — an intelligent knowledge assistant embedded in a company's internal intelligence platform. You have been given access to the company's connected data sources.
@@ -18,28 +23,40 @@ ${context ? `## Live Knowledge Graph Context\n${context}` : "No data sources con
 - When synthesizing across multiple sources, explain the connections you're making.
 - Respond in a professional but direct tone. No corporate speak.`;
 
-  const stream = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [
-      { role: "system", content: systemPrompt },
-      ...messages,
-    ],
-    stream: true,
-    temperature: 0.4,
-    max_tokens: 1024,
-  });
+  let stream: Awaited<ReturnType<typeof groq.chat.completions.create>>;
+  try { // eslint-disable-line
+    stream = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...messages,
+      ],
+      stream: true,
+      temperature: 0.4,
+      max_tokens: 1024,
+    });
+  } catch (err: any) {
+    const status = err?.status ?? err?.statusCode ?? 500;
+    const message = err?.error?.message ?? err?.message ?? "Groq API error";
+    return Response.json({ error: message }, { status: status >= 400 && status < 600 ? status : 500 });
+  }
 
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
     async start(controller) {
-      for await (const chunk of stream) {
-        const text = chunk.choices[0]?.delta?.content ?? "";
-        if (text) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+      try {
+        for await (const chunk of stream) {
+          const text = chunk.choices[0]?.delta?.content ?? "";
+          if (text) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+          }
         }
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+      } catch (err: any) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: err?.message ?? "Stream error" })}\n\n`));
+      } finally {
+        controller.close();
       }
-      controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-      controller.close();
     },
   });
 

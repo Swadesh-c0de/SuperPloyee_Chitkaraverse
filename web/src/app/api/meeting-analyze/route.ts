@@ -1,12 +1,17 @@
 import { NextRequest } from "next/server";
-import Groq from "groq-sdk";
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+import { getGroqClient } from "@/lib/groq";
 
 export async function POST(req: NextRequest) {
+  let groq: Awaited<ReturnType<typeof getGroqClient>>;
+  try {
+    groq = await getGroqClient();
+  } catch (err: any) {
+    return Response.json({ error: err.message }, { status: 500 });
+  }
+
   const { transcript, context } = await req.json();
 
-  const systemPrompt = `You are Cortex — an elite post-meeting intelligence engine. You analyze meeting transcripts and extract actionable intelligence.
+  const prompt = `You are Cortex — an elite post-meeting intelligence engine. You analyze meeting transcripts and extract actionable intelligence.
 
 ${context ? `## Company Knowledge Base Context\n${context}\n\n` : ""}
 
@@ -20,28 +25,29 @@ Return a **pure JSON object** with EXACTLY this structure (no markdown fences, n
   "kbMatches": [{"label": "knowledge base item name", "relevance": "why it is relevant to this meeting"}],
   "riskFlags": ["risk 1", "risk 2"],
   "followUpDraft": "A short follow-up email draft (3-4 sentences) summarizing what was decided and what happens next."
-}`;
+}
 
-  const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: `Analyze this meeting transcript:\n\n${transcript}` },
-    ],
-    temperature: 0.2,
-    max_tokens: 2048,
-  });
+Analyze this meeting transcript:\n\n${transcript}`;
 
-  const raw = completion.choices[0]?.message?.content ?? "{}";
-
-  let parsed: any = {};
   try {
-    // Strip markdown fences if model adds them despite instructions
-    const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    parsed = JSON.parse(cleaned);
-  } catch {
-    parsed = { summary: raw, decisions: [], actions: [], unresolved: [], kbMatches: [], riskFlags: [], followUpDraft: "" };
-  }
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.2,
+      max_tokens: 2048,
+    });
 
-  return Response.json(parsed);
+    const raw = completion.choices[0]?.message?.content ?? "{}";
+    let parsed: any = {};
+    try {
+      const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      parsed = JSON.parse(cleaned);
+    } catch {
+      parsed = { summary: raw, decisions: [], actions: [], unresolved: [], kbMatches: [], riskFlags: [], followUpDraft: "" };
+    }
+
+    return Response.json(parsed);
+  } catch (err: any) {
+    return Response.json({ error: err?.message ?? "Groq API error" }, { status: 500 });
+  }
 }
