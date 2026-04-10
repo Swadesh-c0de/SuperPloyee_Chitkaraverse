@@ -2,8 +2,7 @@ import { NextRequest } from "next/server";
 import fs from "fs";
 import path from "path";
 
-const GOOGLE_TXT = path.resolve(process.cwd(), "../google.txt");
-const BOT_JS = path.resolve(process.cwd(), "../bot/bot.js");
+export const runtime = "nodejs";
 
 function parseNetscapeCookies(content: string) {
   const cookies: object[] = [];
@@ -34,9 +33,9 @@ function parseNetscapeCookies(content: string) {
   return cookies;
 }
 
-function injectIntoBotJs(cookies: object[]) {
-  if (!fs.existsSync(BOT_JS)) throw new Error("bot/bot.js not found");
-  let source = fs.readFileSync(BOT_JS, "utf8");
+function injectIntoBotJs(botJs: string, cookies: object[]) {
+  if (!fs.existsSync(botJs)) throw new Error("bot/bot.js not found");
+  let source = fs.readFileSync(botJs, "utf8");
   const BEGIN = "// __COOKIES_BEGIN__";
   const END = "// __COOKIES_END__";
   const cookieJSON = JSON.stringify(cookies, null, 4);
@@ -53,10 +52,13 @@ function injectIntoBotJs(cookies: object[]) {
   } else {
     throw new Error("Cookie markers not found in bot.js");
   }
-  fs.writeFileSync(BOT_JS, source, "utf8");
+  fs.writeFileSync(botJs, source, "utf8");
 }
 
 export async function POST(req: NextRequest) {
+  const botDir = process.env.BOT_DIR ?? path.join(process.cwd(), "..", "bot");
+  const GOOGLE_TXT = path.join(botDir, "..", "google.txt");
+  const BOT_JS = path.join(botDir, "bot.js");
   try {
     const { cookieText } = await req.json();
     if (!cookieText?.trim()) {
@@ -70,7 +72,7 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: "No valid cookies parsed — check Netscape format" }, { status: 400 });
     }
 
-    injectIntoBotJs(cookies);
+    injectIntoBotJs(BOT_JS, cookies);
 
     return Response.json({ success: true, count: cookies.length });
   } catch (err: any) {

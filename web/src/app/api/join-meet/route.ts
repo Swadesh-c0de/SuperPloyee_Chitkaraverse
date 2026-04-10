@@ -1,11 +1,12 @@
 import { NextRequest } from "next/server";
-import { spawn } from "child_process";
+import { exec } from "child_process";
 import path from "path";
 
-const BOT_DIR = path.resolve(process.cwd(), "../bot");
-const BOT_SCRIPT = path.join(BOT_DIR, "bot.js");
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  const BOT_DIR = process.env.BOT_DIR ?? path.join(process.cwd(), "..", "bot");
+  const BOT_SCRIPT = path.join(BOT_DIR, "bot.js");
   const { meetUrl, botName } = await req.json();
 
   if (!meetUrl || !meetUrl.includes("meet.google.com")) {
@@ -26,17 +27,17 @@ export async function POST(req: NextRequest) {
 
       send("status", "Starting bot process...");
 
-      const child = spawn("node", [BOT_SCRIPT], {
-        cwd: BOT_DIR,          // run from bot/ so require() finds its node_modules
-        env: {
-          ...process.env,
-          MEET_LINK: meetUrl,
-          BOT_NAME: botName || "Cortex AI",
-        },
-        detached: false,
-      });
+      const env = {
+        ...process.env,
+        MEET_LINK: meetUrl,
+        BOT_NAME: botName || "Cortex AI",
+      };
 
-      child.stdout.on("data", (data: Buffer) => {
+      // Use exec with shell so Turbopack cannot misinterpret BOT_SCRIPT as a module
+      const cmd = ["node", JSON.stringify(BOT_SCRIPT)].join(" ");
+      const child = exec(cmd, { cwd: BOT_DIR, env });
+
+      child.stdout?.on("data", (data: Buffer) => {
         const lines = data.toString().split("\n").filter(Boolean);
         for (const line of lines) {
           send("log", line);
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
         }
       });
 
-      child.stderr.on("data", (data: Buffer) => {
+      child.stderr?.on("data", (data: Buffer) => {
         const text = data.toString().trim();
         if (text) send("error", text);
       });
